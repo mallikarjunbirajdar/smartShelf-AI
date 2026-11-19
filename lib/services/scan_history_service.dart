@@ -68,6 +68,20 @@ class ScanHistoryService extends GetxService {
     await _save();
   }
 
+  Future<void> deleteScan(String id) async {
+    final idx = scans.indexWhere((s) => s.id == id);
+    if (idx != -1) {
+      final removed = scans.removeAt(idx);
+      if (removed.imagePath != null) {
+        try {
+          final f = File(removed.imagePath!);
+          if (await f.exists()) await f.delete();
+        } catch (_) {}
+      }
+      await _save();
+    }
+  }
+
   String _titleFor(String source, DateTime now) {
     final time =
         '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';

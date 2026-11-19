@@ -7,11 +7,12 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../controllers/home_controller.dart';
 import '../../controllers/main_shell_controller.dart';
 import '../../models/recent_scan_model.dart';
+import '../../widgets/scan_detail_sheet.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({super.key});
 
-  static const _bg = Color(0xFFF3F4F6);
+  //static const _bg = Color(0xFFF3F4F6);
   static const _cardBlue = Color(0xFFDCECFF);
   static const _ink = Color(0xFF111827);
   static const _muted = Color(0xFF6B7280);
@@ -20,7 +21,7 @@ class HomeView extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: Color.fromARGB(255, 157, 230, 243),
       body: SafeArea(
         child: Obx(() {
           if (controller.isLoading.value) {
@@ -101,6 +102,17 @@ class HomeView extends GetView<HomeController> {
                       ),
                     ),
                   ),
+                  if (controller.recentScans.isNotEmpty) ...[
+                    const SizedBox(width: 4),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline_rounded, size: 22),
+                      color: const Color(0xFFEF4444),
+                      tooltip: 'Clear history',
+                      visualDensity: VisualDensity.compact,
+                      onPressed: () =>
+                          _confirmClearHistory(context, controller),
+                    ),
+                  ],
                 ],
               ),
               const SizedBox(height: 4),
@@ -131,6 +143,60 @@ class HomeView extends GetView<HomeController> {
       ),
     );
   }
+
+  void _confirmClearHistory(BuildContext context, HomeController controller) {
+    Get.dialog(
+      AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Clear History?',
+          style: GoogleFonts.dmSans(fontWeight: FontWeight.w700, color: _ink),
+        ),
+        content: Text(
+          'All recent scan results will be permanently removed.',
+          style: GoogleFonts.dmSans(color: _muted, fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.dmSans(
+                color: _muted,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () {
+              controller.clearHistory();
+              Get.back();
+              Get.snackbar(
+                'History Cleared',
+                'All scan history has been removed.',
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: const Color(0xFF1F2937),
+                colorText: Colors.white,
+                margin: const EdgeInsets.all(16),
+                duration: const Duration(seconds: 2),
+              );
+            },
+            child: Text(
+              'Clear all',
+              style: GoogleFonts.dmSans(fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _Header extends StatelessWidget {
@@ -154,10 +220,7 @@ class _Header extends StatelessWidget {
             ],
           ),
           clipBehavior: Clip.antiAlias,
-          child: Image.asset(
-            logoAsset,
-            fit: BoxFit.cover,
-          ),
+          child: Image.asset(logoAsset, fit: BoxFit.cover),
         ),
         const SizedBox(width: 14),
         Expanded(
@@ -193,7 +256,11 @@ class _Header extends StatelessWidget {
             shape: BoxShape.circle,
             border: Border.all(color: const Color(0xFFE5E7EB)),
           ),
-          child: const Icon(Icons.person_outline, color: HomeView._ink, size: 22),
+          child: const Icon(
+            Icons.person_outline,
+            color: HomeView._ink,
+            size: 22,
+          ),
         ),
       ],
     );
@@ -262,7 +329,7 @@ class _ScanHeroCard extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: onStart,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
+                backgroundColor: Color.fromARGB(255, 80, 173, 235),
                 foregroundColor: Colors.white,
                 elevation: 0,
                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -342,69 +409,91 @@ class _RecentScanTile extends StatelessWidget {
         scan.imagePath != null && scan.imagePath!.trim().isNotEmpty;
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              width: 48,
-              height: 48,
-              color: const Color(0xFFF3F4F6),
-              child: hasImage
-                  ? Image.file(
-                      File(scan.imagePath!),
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const Icon(
-                        Icons.image_outlined,
-                        color: HomeView._muted,
-                      ),
-                    )
-                  : Icon(
-                      scan.source == 'video'
-                          ? Icons.videocam_outlined
-                          : Icons.image_outlined,
-                      color: HomeView._muted,
-                    ),
-            ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => ScanDetailSheet.show(context, scan),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
               children: [
-                Text(
-                  scan.title,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: HomeView._ink,
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    color: const Color(0xFFF3F4F6),
+                    child: hasImage
+                        ? Image.file(
+                            File(scan.imagePath!),
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => const Icon(
+                              Icons.image_outlined,
+                              color: HomeView._muted,
+                            ),
+                          )
+                        : Icon(
+                            scan.source == 'video'
+                                ? Icons.videocam_outlined
+                                : Icons.image_outlined,
+                            color: HomeView._muted,
+                          ),
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        scan.title,
+                        style: GoogleFonts.dmSans(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: HomeView._ink,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        scan.summary,
+                        style: GoogleFonts.dmSans(
+                          fontSize: 13,
+                          color: HomeView._muted,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 Text(
-                  scan.summary,
+                  scan.whenLabel,
                   style: GoogleFonts.dmSans(
-                    fontSize: 13,
+                    fontSize: 12,
                     color: HomeView._muted,
                   ),
+                ),
+                const SizedBox(width: 4),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  size: 18,
+                  color: Color(0xFFD1D5DB),
                 ),
               ],
             ),
           ),
-          Text(
-            scan.whenLabel,
-            style: GoogleFonts.dmSans(
-              fontSize: 12,
-              color: HomeView._muted,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

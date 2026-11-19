@@ -38,22 +38,25 @@ class PhotoDetectView extends GetView<PhotoDetectController> {
           ),
         ],
       ),
-      body: Obx(() {
-        if (controller.error.value != null &&
-            controller.cameraController == null) {
-          return Center(
-            child: Text(
-              controller.error.value!,
-              style: const TextStyle(color: Colors.orange),
-            ),
-          );
-        }
-        return switch (controller.mode.value) {
-          CaptureMode.camera => _CameraPane(controller: controller),
-          CaptureMode.review => _ReviewPane(controller: controller),
-          CaptureMode.result => _ResultPane(controller: controller),
-        };
-      }),
+      body: SafeArea(
+        top: false,
+        child: Obx(() {
+          if (controller.error.value != null &&
+              controller.cameraController == null) {
+            return Center(
+              child: Text(
+                controller.error.value!,
+                style: const TextStyle(color: Colors.orange),
+              ),
+            );
+          }
+          return switch (controller.mode.value) {
+            CaptureMode.camera => _CameraPane(controller: controller),
+            CaptureMode.review => _ReviewPane(controller: controller),
+            CaptureMode.result => _ResultPane(controller: controller),
+          };
+        }),
+      ),
     );
   }
 }
@@ -153,7 +156,7 @@ class _ReviewPane extends StatelessWidget {
             );
           }
           return Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
             child: Row(
               children: [
                 Expanded(
@@ -161,10 +164,19 @@ class _ReviewPane extends StatelessWidget {
                     onPressed: controller.retake,
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.white,
-                      side: const BorderSide(color: Colors.white54),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      side: const BorderSide(color: Colors.white54, width: 1.5),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                     ),
-                    child: const Text('Retake'),
+                    child: Text(
+                      'Retake',
+                      style: GoogleFonts.dmSans(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -174,9 +186,18 @@ class _ReviewPane extends StatelessWidget {
                     style: FilledButton.styleFrom(
                       backgroundColor: const Color(0xFF1B4A3C),
                       foregroundColor: const Color(0xFF69F0AE),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                     ),
-                    child: const Text('Process'),
+                    child: Text(
+                      'Process',
+                      style: GoogleFonts.dmSans(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -238,7 +259,7 @@ class _ResultPane extends StatelessWidget {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
           child: Row(
             children: [
               Expanded(
@@ -246,10 +267,19 @@ class _ResultPane extends StatelessWidget {
                   onPressed: controller.retake,
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    side: const BorderSide(color: Colors.white54),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    side: const BorderSide(color: Colors.white54, width: 1.5),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
-                  child: const Text('Retake'),
+                  child: Text(
+                    'Retake',
+                    style: GoogleFonts.dmSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -259,9 +289,18 @@ class _ResultPane extends StatelessWidget {
                   style: FilledButton.styleFrom(
                     backgroundColor: const Color(0xFF1B4A3C),
                     foregroundColor: const Color(0xFF69F0AE),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
-                  child: const Text('New Capture'),
+                  child: Text(
+                    'New Capture',
+                    style: GoogleFonts.dmSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
             ],

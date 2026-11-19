@@ -41,4 +41,12 @@ class HomeController extends GetxController {
 
   void openRecordVideo() =>
       Get.toNamed(AppRoutes.photo, arguments: {'mode': 'video'});
+
+  Future<void> clearHistory() async {
+    await _history.clear();
+  }
+
+  Future<void> deleteScan(String id) async {
+    await _history.deleteScan(id);
+  }
 }
