@@ -1,3 +1,28 @@
+class ScanDetectionItem {
+  const ScanDetectionItem({
+    required this.label,
+    required this.confidence,
+    required this.kind,
+  });
+
+  final String label;
+  final double confidence;
+  final String kind;
+
+  Map<String, dynamic> toJson() => {
+        'label': label,
+        'confidence': confidence,
+        'kind': kind,
+      };
+
+  factory ScanDetectionItem.fromJson(Map<String, dynamic> json) =>
+      ScanDetectionItem(
+        label: json['label'] as String? ?? 'Product',
+        confidence: (json['confidence'] as num?)?.toDouble() ?? 0.0,
+        kind: json['kind'] as String? ?? 'product',
+      );
+}
+
 class RecentScan {
   const RecentScan({
     required this.id,
@@ -10,6 +35,7 @@ class RecentScan {
     this.emptyCount = 0,
     this.imagePath,
     this.source = 'photo',
+    this.items = const [],
   });
 
   final String id;
@@ -22,6 +48,13 @@ class RecentScan {
   final int emptyCount;
   final String? imagePath;
   final String source; // photo | live | video
+  final List<ScanDetectionItem> items;
+
+  double get avgConfidence {
+    if (items.isEmpty) return 0.0;
+    final total = items.fold(0.0, (sum, i) => sum + i.confidence);
+    return total / items.length;
+  }
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -34,6 +67,7 @@ class RecentScan {
         'emptyCount': emptyCount,
         'imagePath': imagePath,
         'source': source,
+        'items': items.map((e) => e.toJson()).toList(),
       };
 
   factory RecentScan.fromJson(Map<String, dynamic> json) => RecentScan(
@@ -47,5 +81,10 @@ class RecentScan {
         emptyCount: (json['emptyCount'] as num?)?.toInt() ?? 0,
         imagePath: json['imagePath'] as String?,
         source: json['source'] as String? ?? 'photo',
+        items: (json['items'] as List?)
+                ?.map((e) =>
+                    ScanDetectionItem.fromJson(e as Map<String, dynamic>))
+                .toList() ??
+            const [],
       );
 }

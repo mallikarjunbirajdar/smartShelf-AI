@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'app/routes/app_pages.dart';
 import 'app/routes/app_routes.dart';
+import 'services/product_label_service.dart';
 import 'services/scan_history_service.dart';
 import 'services/yolo_detector_service.dart';
 
@@ -22,6 +23,7 @@ Future<void> main() async {
   );
 
   Get.put(YoloDetectorService(), permanent: true);
+  Get.put(ProductLabelService(), permanent: true);
   await Get.putAsync<ScanHistoryService>(
     () async => ScanHistoryService().init(),
     permanent: true,

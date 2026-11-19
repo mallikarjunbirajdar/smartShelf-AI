@@ -1,11 +1,13 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:image/image.dart' as img;
 import 'package:permission_handler/permission_handler.dart';
 
 import '../models/capture_mode.dart';
 import '../models/detection_model.dart';
 import '../services/image_preprocessor_service.dart';
+import '../services/product_label_service.dart';
 import '../services/scan_history_service.dart';
 import '../services/yolo_detector_service.dart';
 
@@ -23,6 +25,7 @@ class PhotoDetectController extends GetxController {
   XFile? _photo;
 
   YoloDetectorService get _detector => Get.find<YoloDetectorService>();
+  ProductLabelService get _labels => Get.find<ProductLabelService>();
   ScanHistoryService get _history => Get.find<ScanHistoryService>();
 
   /// 'photo' | 'video' from Get.arguments
@@ -121,7 +124,7 @@ class PhotoDetectController extends GetxController {
       final decoded = ImagePreprocessorService.decodeFileBytes(bytes);
       if (decoded == null) throw Exception('Could not decode video frame');
       final input = ImagePreprocessorService.fromImage(decoded);
-      final result = await _detector.detect(input);
+      final result = await _withNames(decoded, await _detector.detect(input));
       detections.value = result;
       mode.value = CaptureMode.result;
       await _saveScan(
@@ -132,7 +135,7 @@ class PhotoDetectController extends GetxController {
       );
       Get.snackbar(
         'Video + detection saved',
-        '${result.shelves.length} shelves, ${result.productCount} products',
+        _savedMessage(result),
         snackPosition: SnackPosition.BOTTOM,
       );
     } catch (e) {
@@ -182,7 +185,7 @@ class PhotoDetectController extends GetxController {
       final decoded = ImagePreprocessorService.decodeFileBytes(bytes);
       if (decoded == null) throw Exception('Could not decode image');
       final input = ImagePreprocessorService.fromImage(decoded);
-      final result = await _detector.detect(input);
+      final result = await _withNames(decoded, await _detector.detect(input));
       detections.value = result;
       previewBytes.value = bytes;
       mode.value = CaptureMode.result;
@@ -206,7 +209,7 @@ class PhotoDetectController extends GetxController {
       final decoded = ImagePreprocessorService.decodeFileBytes(bytes);
       if (decoded == null) throw Exception('Could not decode asset');
       final input = ImagePreprocessorService.fromImage(decoded);
-      final result = await _detector.detect(input);
+      final result = await _withNames(decoded, await _detector.detect(input));
       previewBytes.value = bytes;
       detections.value = result;
       mode.value = CaptureMode.result;
@@ -218,6 +221,21 @@ class PhotoDetectController extends GetxController {
     } finally {
       processing.value = false;
     }
+  }
+
+  Future<FrameDetections> _withNames(
+    img.Image image,
+    FrameDetections result,
+  ) {
+    return _labels.annotate(image, result);
+  }
+
+  String _savedMessage(FrameDetections result) {
+    final names = result.namedProductsLabel;
+    final counts =
+        '${result.shelves.length} lanes, ${result.productCount} products · ${result.avgConfidencePercent}% conf';
+    if (names.isEmpty) return counts;
+    return '$names · $counts';
   }
 
   Future<void> _saveScan(

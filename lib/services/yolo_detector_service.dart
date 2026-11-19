@@ -16,8 +16,8 @@ class YoloDetectorService extends GetxService {
       'assets/models/detect_product_empty_space.onnx';
   static const _shelfAsset = 'assets/models/segment_shelf_rows.onnx';
 
-  static const productLabels = {0: 'empty', 1: 'product'};
-  static const shelfLabels = {0: 'shelf'};
+  static const productLabels = {0: 'Empty Space', 1: 'Product'};
+  static const shelfLabels = {0: 'Shelf Lane'};
 
   bool get isReady => _initialized;
 
@@ -106,12 +106,9 @@ class YoloDetectorService extends GetxService {
     required double confThreshold,
     required double iouThreshold,
   }) {
-    if (outputs == null || outputs.isEmpty || outputs.first == null) {
-      return [];
-    }
+    final channels = _detectionChannels(outputs);
+    if (channels == null || channels.length < 6) return [];
 
-    final data = (outputs.first!.value as List).cast<List>();
-    final channels = data.first.cast<List>();
     final numPred = channels[0].length;
     final candidates = <_RawDet>[];
 
@@ -137,7 +134,8 @@ class YoloDetectorService extends GetxService {
     return _nms(candidates, iouThreshold).map((d) {
       return Detection(
         kind: d.classId == 1 ? DetectionKind.product : DetectionKind.empty,
-        label: productLabels[d.classId]!,
+        label: productLabels[d.classId] ??
+            (d.classId == 1 ? 'Product' : 'Empty Space'),
         confidence: d.conf,
         rect: _toSourceRect(d, input),
       );
@@ -150,12 +148,10 @@ class YoloDetectorService extends GetxService {
     required double confThreshold,
     required double iouThreshold,
   }) {
-    if (outputs == null || outputs.isEmpty || outputs.first == null) {
-      return [];
-    }
+    final channels = _detectionChannels(outputs);
+    if (channels == null || channels.length < 5) return [];
 
-    final data = (outputs.first!.value as List).cast<List>();
-    final channels = data.first.cast<List>();
+    // YOLO-seg: [cx, cy, w, h, class..., mask_coeffs...]
     final numPred = channels[0].length;
     final candidates = <_RawDet>[];
 
@@ -178,12 +174,39 @@ class YoloDetectorService extends GetxService {
         .map(
           (d) => Detection(
             kind: DetectionKind.shelfRow,
-            label: shelfLabels[0]!,
+            label: shelfLabels[0] ?? 'Shelf Lane',
             confidence: d.conf,
             rect: _toSourceRect(d, input),
           ),
         )
         .toList();
+  }
+
+  /// Picks the YOLO detection tensor ([1, C, N]) and ignores mask protos.
+  List<List>? _detectionChannels(List<OrtValue?>? outputs) {
+    if (outputs == null || outputs.isEmpty) return null;
+
+    List<List>? best;
+    var bestPreds = -1;
+
+    for (final output in outputs) {
+      if (output == null) continue;
+      final value = output.value;
+      if (value is! List || value.isEmpty) continue;
+      final batch = value.first;
+      if (batch is! List || batch.isEmpty) continue;
+      if (batch.first is! List) continue;
+
+      final channels = batch.cast<List>();
+      if (channels.length < 5) continue; // need at least cx,cy,w,h,score
+      final preds = channels[0].length;
+      // Prefer detection heads (many anchors) over proto masks (e.g. 160x160).
+      if (preds > bestPreds) {
+        bestPreds = preds;
+        best = channels;
+      }
+    }
+    return best;
   }
 
   Rect _toSourceRect(_RawDet d, LetterboxResult input) {

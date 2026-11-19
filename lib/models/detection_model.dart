@@ -15,6 +15,18 @@ class Detection {
   final double confidence;
   final Rect rect;
 
+  String get confidencePercent => '${(confidence * 100).toStringAsFixed(0)}%';
+  String get fullLabel => '$label · $confidencePercent';
+
+  Detection copyWith({String? label}) {
+    return Detection(
+      kind: kind,
+      label: label ?? this.label,
+      confidence: confidence,
+      rect: rect,
+    );
+  }
+
   Color get color {
     switch (kind) {
       case DetectionKind.shelfRow:
@@ -49,4 +61,31 @@ class FrameDetections {
 
   int get emptyCount =>
       products.where((d) => d.kind == DetectionKind.empty).length;
+
+  int get avgConfidencePercent {
+    final list = all;
+    if (list.isEmpty) return 0;
+    final total = list.fold(0.0, (sum, d) => sum + d.confidence);
+    return ((total / list.length) * 100).round();
+  }
+
+  double get avgConfidence {
+    final list = all;
+    if (list.isEmpty) return 0.0;
+    final total = list.fold(0.0, (sum, d) => sum + d.confidence);
+    return total / list.length;
+  }
+
+  /// Brand or package names read from product boxes. Generic "Product" is omitted.
+  String get namedProductsLabel {
+    final names = <String>[];
+    for (final d in products) {
+      if (d.kind != DetectionKind.product) continue;
+      if (d.label == 'Product' || d.label.trim().isEmpty) continue;
+      if (names.contains(d.label)) continue;
+      names.add(d.label);
+      if (names.length == 4) break;
+    }
+    return names.join(', ');
+  }
 }

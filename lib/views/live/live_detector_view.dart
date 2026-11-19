@@ -19,7 +19,24 @@ class LiveDetectorView extends GetView<LiveDetectorController> {
           Obx(() {
             if (controller.cameraReady.value &&
                 controller.cameraController != null) {
-              return CameraPreview(controller.cameraController!);
+              final dets = controller.detections.value;
+              return Center(
+                child: CameraPreview(
+                  controller.cameraController!,
+                  child: dets == null
+                      ? null
+                      : CustomPaint(
+                          painter: DetectionPainter(
+                            detections: dets.all,
+                            imageSize: Size(
+                              dets.imageWidth.toDouble(),
+                              dets.imageHeight.toDouble(),
+                            ),
+                            showLabels: true,
+                          ),
+                        ),
+                ),
+              );
             }
             if (controller.error.value != null) {
               return Center(
@@ -35,19 +52,6 @@ class LiveDetectorView extends GetView<LiveDetectorController> {
             }
             return const Center(
               child: CircularProgressIndicator(color: Color(0xFF69F0AE)),
-            );
-          }),
-          Obx(() {
-            final dets = controller.detections.value;
-            if (dets == null) return const SizedBox.shrink();
-            return CustomPaint(
-              painter: DetectionPainter(
-                detections: dets.all,
-                imageSize: Size(
-                  dets.imageWidth.toDouble(),
-                  dets.imageHeight.toDouble(),
-                ),
-              ),
             );
           }),
           SafeArea(
@@ -97,9 +101,10 @@ class LiveDetectorView extends GetView<LiveDetectorController> {
                     ),
                     child: Row(
                       children: [
-                        _Stat('Shelves', '${dets.shelves.length}'),
+                        _Stat('Lanes', '${dets.shelves.length}'),
                         _Stat('Products', '${dets.productCount}'),
                         _Stat('Empty', '${dets.emptyCount}'),
+                        _Stat('Avg Conf', '${dets.avgConfidencePercent}%'),
                         _Stat('ms', '${dets.inferenceMs}'),
                       ],
                     ),
@@ -132,31 +137,39 @@ class LiveDetectorView extends GetView<LiveDetectorController> {
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 28),
-                  child: Obx(
-                    () => Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _RoundBtn(
-                          icon: Icons.photo_camera,
-                          label: 'Capture',
-                          onTap: controller.captureStill,
+                Builder(
+                  builder: (context) {
+                    final bottomInset = MediaQuery.paddingOf(context).bottom;
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        bottom: bottomInset > 0 ? bottomInset + 16 : 28,
+                      ),
+                      child: Obx(
+                        () => Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _RoundBtn(
+                              icon: Icons.photo_camera,
+                              label: 'Capture',
+                              onTap: controller.captureStill,
+                            ),
+                            _RoundBtn(
+                              icon: controller.recording.value
+                                  ? Icons.stop
+                                  : Icons.videocam,
+                              label: controller.recording.value
+                                  ? 'Stop'
+                                  : 'Record',
+                              color: controller.recording.value
+                                  ? Colors.redAccent
+                                  : null,
+                              onTap: controller.toggleRecording,
+                            ),
+                          ],
                         ),
-                        _RoundBtn(
-                          icon: controller.recording.value
-                              ? Icons.stop
-                              : Icons.videocam,
-                          label:
-                              controller.recording.value ? 'Stop' : 'Record',
-                          color: controller.recording.value
-                              ? Colors.redAccent
-                              : null,
-                          onTap: controller.toggleRecording,
-                        ),
-                      ],
-                    ),
-                  ),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),

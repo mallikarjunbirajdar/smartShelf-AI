@@ -77,6 +77,21 @@ class ImagePreprocessorService {
     required int sensorOrientation,
     required CameraLensDirection lensDirection,
   }) {
+    return fromImage(
+      orientCameraImage(
+        cameraImage,
+        sensorOrientation: sensorOrientation,
+        lensDirection: lensDirection,
+      ),
+    );
+  }
+
+  /// Camera frame in the same orientation used for detection boxes.
+  static img.Image orientCameraImage(
+    CameraImage cameraImage, {
+    required int sensorOrientation,
+    required CameraLensDirection lensDirection,
+  }) {
     final rgb = convertCameraImage(cameraImage);
     img.Image oriented = rgb;
 
@@ -92,7 +107,7 @@ class ImagePreprocessorService {
       oriented = img.flipHorizontal(oriented);
     }
 
-    return fromImage(oriented);
+    return oriented;
   }
 
   static img.Image convertCameraImage(CameraImage cameraImage) {

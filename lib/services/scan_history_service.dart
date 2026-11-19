@@ -28,10 +28,25 @@ class ScanHistoryService extends GetxService {
     final shelves = result.shelves.length;
     final products = result.productCount;
     final empty = result.emptyCount;
+    final items = result.all.map((d) {
+      final kindStr = switch (d.kind) {
+        DetectionKind.shelfRow => 'shelf',
+        DetectionKind.product => 'product',
+        DetectionKind.empty => 'empty',
+      };
+      return ScanDetectionItem(
+        label: d.label,
+        confidence: d.confidence,
+        kind: kindStr,
+      );
+    }).toList();
+
+    final counts = _summary(shelves, products, empty, result.avgConfidencePercent);
+    final names = result.namedProductsLabel;
     final scan = RecentScan(
       id: now.millisecondsSinceEpoch.toString(),
       title: customTitle ?? _titleFor(source, now),
-      summary: _summary(shelves, products, empty),
+      summary: names.isEmpty ? counts : '$names · $counts',
       whenLabel: _whenLabel(now),
       createdAt: now,
       shelfCount: shelves,
@@ -39,6 +54,7 @@ class ScanHistoryService extends GetxService {
       emptyCount: empty,
       imagePath: imagePath,
       source: source,
+      items: items,
     );
     scans.insert(0, scan);
     if (scans.length > 50) {
@@ -95,13 +111,25 @@ class ScanHistoryService extends GetxService {
     }
   }
 
-  String _summary(int shelves, int products, int empty) {
-    final shelfLabel = shelves == 1 ? '1 shelf' : '$shelves shelves';
-    final productLabel = products == 1 ? '1 product' : '$products products';
-    if (empty > 0) {
-      return '$shelfLabel, $productLabel, $empty empty';
+  String _summary(int shelves, int products, int empty, [int? confPercent]) {
+    final parts = <String>[];
+    if (shelves > 0) {
+      parts.add(shelves == 1 ? '1 lane' : '$shelves lanes');
     }
-    return '$shelfLabel, $productLabel';
+    if (products > 0) {
+      parts.add(products == 1 ? '1 product' : '$products products');
+    }
+    if (empty > 0) {
+      parts.add(empty == 1 ? '1 empty' : '$empty empty');
+    }
+    if (parts.isEmpty) {
+      parts.add('No detections');
+    }
+    var str = parts.join(', ');
+    if (confPercent != null && confPercent > 0) {
+      str += ' · $confPercent% conf';
+    }
+    return str;
   }
 
   String _whenLabel(DateTime dt) {
@@ -142,6 +170,7 @@ class ScanHistoryService extends GetxService {
                 emptyCount: s.emptyCount,
                 imagePath: s.imagePath,
                 source: s.source,
+                items: s.items,
               ),
             )
             .toList(),

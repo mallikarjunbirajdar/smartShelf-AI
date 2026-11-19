@@ -21,49 +21,97 @@ class DetectionPainter extends CustomPainter {
     final dx = (size.width - imageSize.width * scale) / 2;
     final dy = (size.height - imageSize.height * scale) / 2;
 
-    for (final det in detections) {
+    // Draw lanes first so product boxes/labels stay on top.
+    final ordered = [
+      ...detections.where((d) => d.kind == DetectionKind.shelfRow),
+      ...detections.where((d) => d.kind != DetectionKind.shelfRow),
+    ];
+
+    for (final det in ordered) {
       final rect = Rect.fromLTRB(
         det.rect.left * scale + dx,
         det.rect.top * scale + dy,
         det.rect.right * scale + dx,
         det.rect.bottom * scale + dy,
       );
+      if (rect.width <= 1 || rect.height <= 1) continue;
 
-      final stroke = Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = det.kind == DetectionKind.shelfRow ? 3.0 : 2.0
-        ..color = det.color;
+      final isLane = det.kind == DetectionKind.shelfRow;
 
       final fill = Paint()
         ..style = PaintingStyle.fill
-        ..color = det.color.withValues(alpha: 0.12);
+        ..color = det.color.withValues(alpha: isLane ? 0.28 : 0.14);
+
+      final stroke = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = isLane ? 3.5 : 2.0
+        ..color = det.color;
 
       canvas.drawRect(rect, fill);
       canvas.drawRect(rect, stroke);
 
+      // Emphasize shelf lanes with side ticks so thin rows stay visible.
+      if (isLane) {
+        final tick = Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 4
+          ..strokeCap = StrokeCap.round
+          ..color = det.color;
+        canvas.drawLine(
+          Offset(rect.left, rect.center.dy),
+          Offset(rect.left + 10, rect.center.dy),
+          tick,
+        );
+        canvas.drawLine(
+          Offset(rect.right - 10, rect.center.dy),
+          Offset(rect.right, rect.center.dy),
+          tick,
+        );
+      }
+
       if (!showLabels) continue;
 
       final label =
-          '${det.label} ${(det.confidence * 100).toStringAsFixed(0)}%';
+          '${det.label} · ${(det.confidence * 100).toStringAsFixed(0)}%';
+      var maxLabelWidth = rect.width < 128 ? 128.0 : rect.width;
+      final viewCap = size.width * 0.72;
+      if (maxLabelWidth > viewCap) maxLabelWidth = viewCap;
       final tp = TextPainter(
         text: TextSpan(
           text: label,
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            backgroundColor: det.color,
+          style: const TextStyle(
+            color: Color(0xFF07151B),
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+            height: 1.1,
           ),
         ),
         textDirection: TextDirection.ltr,
-      )..layout(maxWidth: size.width);
+        maxLines: 2,
+        ellipsis: '…',
+      )..layout(maxWidth: maxLabelWidth);
 
-      final labelTop = (rect.top - tp.height - 2).clamp(0.0, size.height);
-      canvas.drawRect(
-        Rect.fromLTWH(rect.left, labelTop, tp.width + 6, tp.height + 2),
-        Paint()..color = det.color,
+      final labelW = tp.width + 10;
+      final labelH = tp.height + 6;
+      var labelLeft = rect.left;
+      var labelTop = rect.top - labelH - 3;
+
+      // Keep labels on-canvas; prefer above the box, else inside.
+      if (labelTop < 0) labelTop = rect.top + 2;
+      if (labelLeft + labelW > size.width) {
+        labelLeft = (size.width - labelW).clamp(0.0, size.width);
+      }
+      if (labelLeft < 0) labelLeft = 0;
+      if (labelTop + labelH > size.height) {
+        labelTop = (size.height - labelH).clamp(0.0, size.height);
+      }
+
+      final bg = RRect.fromRectAndRadius(
+        Rect.fromLTWH(labelLeft, labelTop, labelW, labelH),
+        const Radius.circular(4),
       );
-      tp.paint(canvas, Offset(rect.left + 3, labelTop + 1));
+      canvas.drawRRect(bg, Paint()..color = det.color);
+      tp.paint(canvas, Offset(labelLeft + 5, labelTop + 3));
     }
   }
 

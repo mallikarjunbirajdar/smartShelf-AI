@@ -329,14 +329,14 @@ class ScanDetailSheet extends StatelessWidget {
                       children: [
                         Expanded(
                           child: _MetricCard(
-                            label: 'Shelves',
+                            label: 'Lanes',
                             value: scan.shelfCount.toString(),
                             icon: Icons.table_rows_rounded,
                             accentColor: const Color(0xFF3B82F6),
                             bgColor: const Color(0xFFEFF6FF),
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: _MetricCard(
                             label: 'Products',
@@ -346,7 +346,7 @@ class ScanDetailSheet extends StatelessWidget {
                             bgColor: const Color(0xFFECFDF5),
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: _MetricCard(
                             label: 'Empty',
@@ -354,6 +354,18 @@ class ScanDetailSheet extends StatelessWidget {
                             icon: Icons.check_box_outline_blank_rounded,
                             accentColor: const Color(0xFFF59E0B),
                             bgColor: const Color(0xFFFFFBEB),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _MetricCard(
+                            label: 'Avg Conf',
+                            value: scan.avgConfidence > 0
+                                ? '${(scan.avgConfidence * 100).round()}%'
+                                : '--',
+                            icon: Icons.analytics_outlined,
+                            accentColor: const Color(0xFF8B5CF6),
+                            bgColor: const Color(0xFFF5F3FF),
                           ),
                         ),
                       ],
@@ -398,6 +410,119 @@ class ScanDetailSheet extends StatelessWidget {
                         ],
                       ),
                     ),
+
+                    // Detected Items & Confidence Scores breakdown
+                    if (scan.items.isNotEmpty) ...[
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Text(
+                            'Detected labels & confidence',
+                            style: GoogleFonts.dmSans(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF111827),
+                            ),
+                          ),
+                          const Spacer(),
+                          Text(
+                            '${scan.items.length} items',
+                            style: GoogleFonts.dmSans(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF6B7280),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF9FAFB),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                        ),
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: scan.items.length,
+                          separatorBuilder: (_, __) =>
+                              const Divider(height: 1, color: Color(0xFFE5E7EB)),
+                          itemBuilder: (context, i) {
+                            final item = scan.items[i];
+                            final isProduct = item.kind == 'product';
+                            final isEmpty = item.kind == 'empty';
+                            final badgeColor = isProduct
+                                ? const Color(0xFF10B981)
+                                : (isEmpty
+                                    ? const Color(0xFFF59E0B)
+                                    : const Color(0xFF06B6D4));
+                            final badgeBg = isProduct
+                                ? const Color(0xFFECFDF5)
+                                : (isEmpty
+                                    ? const Color(0xFFFFFBEB)
+                                    : const Color(0xFFEFF6FF));
+                            final confPercent = (item.confidence * 100).round();
+
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 12,
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: badgeBg,
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: badgeColor.withValues(alpha: 0.3),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      item.label,
+                                      style: GoogleFonts.dmSans(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: badgeColor,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(4),
+                                      child: LinearProgressIndicator(
+                                        value: item.confidence.clamp(0.0, 1.0),
+                                        minHeight: 6,
+                                        backgroundColor:
+                                            const Color(0xFFE5E7EB),
+                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                          badgeColor,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    '$confPercent%',
+                                    style: GoogleFonts.dmSans(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF111827),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
