@@ -1,0 +1,33 @@
+name: shelf_ai_detector_new
+description: SmartShelf AI - Supermarket shelf and product detection with live camera.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  camera: ^0.11.2
+  permission_handler: ^11.4.0
+  onnxruntime: ^1.4.1
+  image: ^4.5.4
+  path_provider: ^2.1.5
+  path: ^1.9.0
+  google_fonts: ^6.2.1
+  get: ^4.6.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/models/detect_product_empty_space.onnx
+    - assets/models/segment_shelf_rows.onnx
+    - assets/test_images/
+    - assets/images/shelf_ai_logo.jpg
