@@ -28,7 +28,6 @@ class PhotoDetectController extends GetxController {
   ProductLabelService get _labels => Get.find<ProductLabelService>();
   ScanHistoryService get _history => Get.find<ScanHistoryService>();
 
-  /// 'photo' | 'video' from Get.arguments
   String entryMode = 'photo';
 
   @override
@@ -101,7 +100,6 @@ class PhotoDetectController extends GetxController {
       final file = await c.stopVideoRecording();
       recording.value = false;
       videoPath.value = file.path;
-      // After video stops, grab a still frame and run AI detection.
       await _captureAndDetectFromVideo(c);
       return;
     }
@@ -109,12 +107,10 @@ class PhotoDetectController extends GetxController {
     recording.value = true;
   }
 
-  /// Takes a still after video recording and runs YOLO detection.
   Future<void> _captureAndDetectFromVideo(CameraController c) async {
     processing.value = true;
     mode.value = CaptureMode.review;
     try {
-      // Small delay so camera session settles after video stop.
       await Future<void>.delayed(const Duration(milliseconds: 400));
       final still = await c.takePicture();
       final bytes = await still.readAsBytes();
@@ -166,7 +162,6 @@ class PhotoDetectController extends GetxController {
     processing.value = true;
 
     try {
-      // If only video exists (no still yet), capture one now for AI.
       if (_photo == null) {
         final c = cameraController;
         if (c == null || !c.value.isInitialized) {

@@ -21,7 +21,6 @@ class DetectionPainter extends CustomPainter {
     final dx = (size.width - imageSize.width * scale) / 2;
     final dy = (size.height - imageSize.height * scale) / 2;
 
-    // Draw lanes first so product boxes/labels stay on top.
     final ordered = [
       ...detections.where((d) => d.kind == DetectionKind.shelfRow),
       ...detections.where((d) => d.kind != DetectionKind.shelfRow),
@@ -50,7 +49,6 @@ class DetectionPainter extends CustomPainter {
       canvas.drawRect(rect, fill);
       canvas.drawRect(rect, stroke);
 
-      // Emphasize shelf lanes with side ticks so thin rows stay visible.
       if (isLane) {
         final tick = Paint()
           ..style = PaintingStyle.stroke
@@ -96,7 +94,6 @@ class DetectionPainter extends CustomPainter {
       var labelLeft = rect.left;
       var labelTop = rect.top - labelH - 3;
 
-      // Keep labels on-canvas; prefer above the box, else inside.
       if (labelTop < 0) labelTop = rect.top + 2;
       if (labelLeft + labelW > size.width) {
         labelLeft = (size.width - labelW).clamp(0.0, size.width);

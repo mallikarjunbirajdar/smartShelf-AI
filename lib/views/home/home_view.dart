@@ -12,7 +12,6 @@ import '../../widgets/scan_detail_sheet.dart';
 class HomeView extends GetView<HomeController> {
   const HomeView({super.key});
 
-  //static const _bg = Color(0xFFF3F4F6);
   static const _cardBlue = Color(0xFFDCECFF);
   static const _ink = Color(0xFF111827);
   static const _muted = Color(0xFF6B7280);

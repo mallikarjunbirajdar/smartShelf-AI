@@ -82,7 +82,6 @@ class LiveDetectorController extends GetxController {
       );
       final input = ImagePreprocessorService.fromImage(oriented);
 
-      // Run shelf-lane model often enough that lanes stay visible.
       final runShelf = _shelfEvery % 2 == 0;
       _shelfEvery++;
 
@@ -107,7 +106,6 @@ class LiveDetectorController extends GetxController {
         inferenceMs: result.inferenceMs,
       );
     } catch (_) {
-      // Drop failed frames.
     } finally {
       _busy = false;
     }
@@ -155,7 +153,6 @@ class LiveDetectorController extends GetxController {
       final file = await c.stopVideoRecording();
       recording.value = false;
       try {
-        // Grab a still after video stop so history has a preview image.
         await Future<void>.delayed(const Duration(milliseconds: 400));
         final still = await c.takePicture();
         final bytes = await still.readAsBytes();
@@ -196,7 +193,6 @@ class LiveDetectorController extends GetxController {
           );
         }
       } catch (e) {
-        // Fall back to last in-memory detections if still capture fails.
         final dets = detections.value;
         if (dets != null) {
           await _history.addFromDetection(

@@ -12,7 +12,6 @@ class HomeController extends GetxController {
   ScanHistoryService get _history => Get.find<ScanHistoryService>();
   YoloDetectorService get _detector => Get.find<YoloDetectorService>();
 
-  /// Live list from photo / live detections (no hardcoded sample data).
   RxList<RecentScan> get recentScans => _history.scans;
 
   @override

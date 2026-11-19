@@ -86,7 +86,6 @@ class ImagePreprocessorService {
     );
   }
 
-  /// Camera frame in the same orientation used for detection boxes.
   static img.Image orientCameraImage(
     CameraImage cameraImage, {
     required int sensorOrientation,

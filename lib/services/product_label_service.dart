@@ -7,7 +7,6 @@ import 'package:image/image.dart' as img;
 
 import '../models/detection_model.dart';
 
-/// Reads the printed name on each detected product box.
 class ProductLabelService extends GetxService {
   final TextRecognizer _recognizer = TextRecognizer(
     script: TextRecognitionScript.latin,
@@ -62,7 +61,6 @@ class ProductLabelService extends GetxService {
         if (name == null) continue;
         updated[index] = products[index].copyWith(label: name);
       } catch (_) {
-        // Keep the generic "Product" label when text cannot be read.
       }
     }
     return updated;

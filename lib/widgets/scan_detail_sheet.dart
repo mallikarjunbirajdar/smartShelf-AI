@@ -103,8 +103,8 @@ class ScanDetailSheet extends StatelessWidget {
               if (Get.isRegistered<HomeController>()) {
                 Get.find<HomeController>().deleteScan(scan.id);
               }
-              Get.back(); // close dialog
-              Get.back(); // close bottom sheet
+              Get.back();
+              Get.back();
               Get.snackbar(
                 'Scan Deleted',
                 'The scan record has been removed.',
@@ -157,7 +157,6 @@ class ScanDetailSheet extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Drag Handle
             const SizedBox(height: 12),
             Container(
               width: 44,
@@ -169,7 +168,6 @@ class ScanDetailSheet extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            // Top Bar with Source & Close
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
@@ -224,14 +222,12 @@ class ScanDetailSheet extends StatelessWidget {
               ),
             ),
 
-            // Scrollable Content
             Flexible(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Title and Date
                     Text(
                       scan.title,
                       style: GoogleFonts.dmSans(
@@ -250,7 +246,6 @@ class ScanDetailSheet extends StatelessWidget {
                     ),
                     const SizedBox(height: 18),
 
-                    // Big Image Container
                     if (hasImage) ...[
                       GestureDetector(
                         onTap: () =>
@@ -356,7 +351,6 @@ class ScanDetailSheet extends StatelessWidget {
                       const SizedBox(height: 18),
                     ],
 
-                    // Detection Stat Cards Row
                     Text(
                       'Detection statistics',
                       style: GoogleFonts.dmSans(
@@ -413,7 +407,6 @@ class ScanDetailSheet extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
 
-                    // Summary Details Card
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
@@ -456,7 +449,6 @@ class ScanDetailSheet extends StatelessWidget {
                       ),
                     ),
 
-                    // Detected Items & Confidence Scores breakdown
                     if (scan.items.isNotEmpty) ...[
                       const SizedBox(height: 20),
                       Row(

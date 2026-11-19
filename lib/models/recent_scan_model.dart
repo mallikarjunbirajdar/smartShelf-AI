@@ -47,7 +47,7 @@ class RecentScan {
   final int productCount;
   final int emptyCount;
   final String? imagePath;
-  final String source; // photo | live | video
+  final String source;
   final List<ScanDetectionItem> items;
 
   double get avgConfidence {

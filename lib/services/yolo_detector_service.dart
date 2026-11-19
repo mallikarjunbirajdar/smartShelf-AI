@@ -151,7 +151,6 @@ class YoloDetectorService extends GetxService {
     final channels = _detectionChannels(outputs);
     if (channels == null || channels.length < 5) return [];
 
-    // YOLO-seg: [cx, cy, w, h, class..., mask_coeffs...]
     final numPred = channels[0].length;
     final candidates = <_RawDet>[];
 
@@ -182,7 +181,6 @@ class YoloDetectorService extends GetxService {
         .toList();
   }
 
-  /// Picks the YOLO detection tensor ([1, C, N]) and ignores mask protos.
   List<List>? _detectionChannels(List<OrtValue?>? outputs) {
     if (outputs == null || outputs.isEmpty) return null;
 
@@ -198,9 +196,8 @@ class YoloDetectorService extends GetxService {
       if (batch.first is! List) continue;
 
       final channels = batch.cast<List>();
-      if (channels.length < 5) continue; // need at least cx,cy,w,h,score
+      if (channels.length < 5) continue;
       final preds = channels[0].length;
-      // Prefer detection heads (many anchors) over proto masks (e.g. 160x160).
       if (preds > bestPreds) {
         bestPreds = preds;
         best = channels;

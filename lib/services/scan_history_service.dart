@@ -155,7 +155,6 @@ class ScanHistoryService extends GetxService {
           .cast<Map<String, dynamic>>()
           .map(RecentScan.fromJson)
           .toList();
-      // Refresh relative labels
       scans.assignAll(
         list
             .map(
@@ -176,7 +175,6 @@ class ScanHistoryService extends GetxService {
             .toList(),
       );
     } catch (_) {
-      // Ignore corrupt history.
     }
   }
 
@@ -188,7 +186,6 @@ class ScanHistoryService extends GetxService {
         flush: true,
       );
     } catch (_) {
-      // Ignore write failures.
     }
   }
 }

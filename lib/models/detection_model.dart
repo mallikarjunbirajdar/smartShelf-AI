@@ -76,7 +76,6 @@ class FrameDetections {
     return total / list.length;
   }
 
-  /// Brand or package names read from product boxes. Generic "Product" is omitted.
   String get namedProductsLabel {
     final names = <String>[];
     for (final d in products) {
