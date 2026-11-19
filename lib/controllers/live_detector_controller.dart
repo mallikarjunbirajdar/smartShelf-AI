@@ -154,25 +154,63 @@ class LiveDetectorController extends GetxController {
     if (recording.value) {
       final file = await c.stopVideoRecording();
       recording.value = false;
-      // Save last live detections with this video session.
-      final dets = detections.value;
-      if (dets != null) {
-        await _history.addFromDetection(
-          result: dets,
-          source: 'video',
-          customTitle: 'Video scan',
-        );
-      }
-      final names = dets?.namedProductsLabel ?? '';
-      Get.snackbar(
-        'Video saved',
-        dets == null
-            ? file.path
-            : names.isEmpty
+      try {
+        // Grab a still after video stop so history has a preview image.
+        await Future<void>.delayed(const Duration(milliseconds: 400));
+        final still = await c.takePicture();
+        final bytes = await still.readAsBytes();
+        final decoded = ImagePreprocessorService.decodeFileBytes(bytes);
+        String? thumb = await _history.saveThumbnail(bytes);
+
+        FrameDetections? dets = detections.value;
+        if (decoded != null) {
+          final input = ImagePreprocessorService.fromImage(decoded);
+          final detected = await _detector.detect(
+            input,
+            productConf: confidence.value,
+          );
+          dets = await _labels.annotate(decoded, detected);
+          detections.value = dets;
+        }
+
+        if (dets != null) {
+          await _history.addFromDetection(
+            result: dets,
+            source: 'video',
+            customTitle: 'Video scan',
+            imagePath: thumb,
+          );
+          final names = dets.namedProductsLabel;
+          Get.snackbar(
+            'Video + detection saved',
+            names.isEmpty
                 ? '${dets.shelves.length} lanes, ${dets.productCount} products'
                 : '$names · ${dets.productCount} products',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+            snackPosition: SnackPosition.BOTTOM,
+          );
+        } else {
+          Get.snackbar(
+            'Video saved',
+            file.path,
+            snackPosition: SnackPosition.BOTTOM,
+          );
+        }
+      } catch (e) {
+        // Fall back to last in-memory detections if still capture fails.
+        final dets = detections.value;
+        if (dets != null) {
+          await _history.addFromDetection(
+            result: dets,
+            source: 'video',
+            customTitle: 'Video scan',
+          );
+        }
+        Get.snackbar(
+          'Video saved',
+          dets == null ? file.path : 'Saved without preview: $e',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
       if (!c.value.isStreamingImages) {
         await c.startImageStream(onFrame);
       }
@@ -215,13 +253,23 @@ class LiveDetectorController extends GetxController {
           names.isEmpty
               ? '${result.shelves.length} lanes, ${result.productCount} products · ${result.avgConfidencePercent}% conf'
               : '$names · ${result.productCount} products',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Color.fromARGB(255, 254, 255, 255),
+          colorText: Color.fromARGB(255, 0, 8, 19),
         );
       } else {
-        Get.snackbar('Photo saved', file.path, snackPosition: SnackPosition.BOTTOM);
+        Get.snackbar(
+          'Photo saved',
+          file.path,
+          snackPosition: SnackPosition.BOTTOM,
+        );
       }
     } catch (e) {
-      Get.snackbar('Capture failed', e.toString(), snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Capture failed',
+        e.toString(),
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } finally {
       if (wasStreaming && !recording.value) {
         await c.startImageStream(onFrame);

@@ -22,8 +22,18 @@ class ScanDetailSheet extends StatelessWidget {
 
   static String _formatDate(DateTime dt) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     final hour = dt.hour.toString().padLeft(2, '0');
     final minute = dt.minute.toString().padLeft(2, '0');
@@ -40,17 +50,17 @@ class ScanDetailSheet extends StatelessWidget {
             foregroundColor: Colors.white,
             title: Text(
               scan.title,
-              style: GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.w600),
+              style: GoogleFonts.dmSans(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           body: Center(
             child: InteractiveViewer(
               minScale: 0.8,
               maxScale: 5.0,
-              child: Image.file(
-                File(imagePath),
-                fit: BoxFit.contain,
-              ),
+              child: Image.file(File(imagePath), fit: BoxFit.contain),
             ),
           ),
         ),
@@ -85,7 +95,9 @@ class ScanDetailSheet extends StatelessWidget {
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFFEF4444),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
             onPressed: () {
               if (Get.isRegistered<HomeController>()) {
@@ -163,7 +175,10 @@ class ScanDetailSheet extends StatelessWidget {
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFDCECFF),
                       borderRadius: BorderRadius.circular(20),
@@ -171,7 +186,11 @@ class ScanDetailSheet extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(sourceIcon, size: 14, color: const Color(0xFF3B82F6)),
+                        Icon(
+                          sourceIcon,
+                          size: 14,
+                          color: const Color(0xFF3B82F6),
+                        ),
                         const SizedBox(width: 5),
                         Text(
                           sourceLabel,
@@ -186,12 +205,18 @@ class ScanDetailSheet extends StatelessWidget {
                   ),
                   const Spacer(),
                   IconButton(
-                    icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444)),
+                    icon: const Icon(
+                      Icons.delete_outline_rounded,
+                      color: Color(0xFFEF4444),
+                    ),
                     tooltip: 'Delete scan',
                     onPressed: () => _confirmDelete(context),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close_rounded, color: Color(0xFF6B7280)),
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      color: Color(0xFF6B7280),
+                    ),
                     tooltip: 'Close',
                     onPressed: () => Navigator.of(context).pop(),
                   ),
@@ -228,7 +253,8 @@ class ScanDetailSheet extends StatelessWidget {
                     // Big Image Container
                     if (hasImage) ...[
                       GestureDetector(
-                        onTap: () => _openFullScreenImage(context, scan.imagePath!),
+                        onTap: () =>
+                            _openFullScreenImage(context, scan.imagePath!),
                         child: Container(
                           width: double.infinity,
                           height: 260,
@@ -254,7 +280,11 @@ class ScanDetailSheet extends StatelessWidget {
                                   File(scan.imagePath!),
                                   fit: BoxFit.contain,
                                   errorBuilder: (_, __, ___) => const Center(
-                                    child: Icon(Icons.broken_image_outlined, color: Colors.white54, size: 48),
+                                    child: Icon(
+                                      Icons.broken_image_outlined,
+                                      color: Colors.white54,
+                                      size: 48,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -262,7 +292,10 @@ class ScanDetailSheet extends StatelessWidget {
                                 right: 10,
                                 bottom: 10,
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: Colors.black.withValues(alpha: 0.7),
                                     borderRadius: BorderRadius.circular(20),
@@ -270,7 +303,11 @@ class ScanDetailSheet extends StatelessWidget {
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      const Icon(Icons.fullscreen_rounded, color: Colors.white, size: 16),
+                                      const Icon(
+                                        Icons.fullscreen_rounded,
+                                        color: Colors.white,
+                                        size: 16,
+                                      ),
                                       const SizedBox(width: 4),
                                       Text(
                                         'Full screen',
@@ -300,7 +337,11 @@ class ScanDetailSheet extends StatelessWidget {
                         ),
                         child: Column(
                           children: [
-                            const Icon(Icons.image_not_supported_outlined, size: 44, color: Color(0xFF9CA3AF)),
+                            const Icon(
+                              Icons.image_not_supported_outlined,
+                              size: 44,
+                              color: Color(0xFF9CA3AF),
+                            ),
                             const SizedBox(height: 8),
                             Text(
                               'No image recorded for this scan',
@@ -386,7 +427,11 @@ class ScanDetailSheet extends StatelessWidget {
                         children: [
                           Row(
                             children: [
-                              const Icon(Icons.info_outline_rounded, size: 18, color: Color(0xFF3B82F6)),
+                              const Icon(
+                                Icons.info_outline_rounded,
+                                size: 18,
+                                color: Color(0xFF3B82F6),
+                              ),
                               const SizedBox(width: 8),
                               Text(
                                 'Summary',
@@ -446,8 +491,10 @@ class ScanDetailSheet extends StatelessWidget {
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: scan.items.length,
-                          separatorBuilder: (_, __) =>
-                              const Divider(height: 1, color: Color(0xFFE5E7EB)),
+                          separatorBuilder: (_, __) => const Divider(
+                            height: 1,
+                            color: Color(0xFFE5E7EB),
+                          ),
                           itemBuilder: (context, i) {
                             final item = scan.items[i];
                             final isProduct = item.kind == 'product';
@@ -455,13 +502,13 @@ class ScanDetailSheet extends StatelessWidget {
                             final badgeColor = isProduct
                                 ? const Color(0xFF10B981)
                                 : (isEmpty
-                                    ? const Color(0xFFF59E0B)
-                                    : const Color(0xFF06B6D4));
+                                      ? const Color(0xFFF59E0B)
+                                      : const Color(0xFF06B6D4));
                             final badgeBg = isProduct
                                 ? const Color(0xFFECFDF5)
                                 : (isEmpty
-                                    ? const Color(0xFFFFFBEB)
-                                    : const Color(0xFFEFF6FF));
+                                      ? const Color(0xFFFFFBEB)
+                                      : const Color(0xFFEFF6FF));
                             final confPercent = (item.confidence * 100).round();
 
                             return Padding(
@@ -480,7 +527,9 @@ class ScanDetailSheet extends StatelessWidget {
                                       color: badgeBg,
                                       borderRadius: BorderRadius.circular(6),
                                       border: Border.all(
-                                        color: badgeColor.withValues(alpha: 0.3),
+                                        color: badgeColor.withValues(
+                                          alpha: 0.3,
+                                        ),
                                       ),
                                     ),
                                     child: Text(
@@ -499,11 +548,13 @@ class ScanDetailSheet extends StatelessWidget {
                                       child: LinearProgressIndicator(
                                         value: item.confidence.clamp(0.0, 1.0),
                                         minHeight: 6,
-                                        backgroundColor:
-                                            const Color(0xFFE5E7EB),
-                                        valueColor: AlwaysStoppedAnimation<Color>(
-                                          badgeColor,
+                                        backgroundColor: const Color(
+                                          0xFFE5E7EB,
                                         ),
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              badgeColor,
+                                            ),
                                       ),
                                     ),
                                   ),
